@@ -204,6 +204,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+--
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -345,6 +346,7 @@ require('lazy').setup({
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch' },
+        { '<leader>r', group = '[R]ust' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
@@ -460,6 +462,14 @@ require('lazy').setup({
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
     end,
+  },
+
+  {
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    config = true,
+    -- use opts = {} for passing setup options
+    -- this is equivalent to setup({}) function
   },
 
   -- LSP Plugins
@@ -583,6 +593,37 @@ require('lazy').setup({
             else
               return client.supports_method(method, { bufnr = bufnr })
             end
+          end
+
+          -- Rust-specific keymaps (only active in Rust files)
+          if vim.bo[event.buf].filetype == 'rust' then
+            -- Run & Test
+            map('<leader>rR', '<cmd>RustLsp runnables<CR>', '[R]ust [R]unnables')
+            map('<leader>rt', '<cmd>RustLsp testables<CR>', '[R]ust [T]estables')
+
+            -- Quick repeat last runnable/testable
+            map('<leader>rr', '<cmd>RustLsp! runnables<CR>', '[R]ust [R]un')
+            map('<leader>rT', '<cmd>RustLsp! testables<CR>', '[R]ust last [T]estable')
+
+            -- Code understanding
+            map('<leader>re', '<cmd>RustLsp explainError<CR>', '[R]ust [E]xplain error')
+            map('<leader>rm', '<cmd>RustLsp expandMacro<CR>', '[R]ust expand [M]acro')
+            map('<leader>rc', '<cmd>RustLsp openCargo<CR>', '[R]ust open [C]argo.toml')
+            map('<leader>rd', '<cmd>RustLsp renderDiagnostic<CR>', '[R]ust [D]iagnostic')
+
+            -- Documentation
+            map('<leader>rh', '<cmd>RustLsp hover actions<CR>', '[R]ust [H]over actions')
+            map('K', '<cmd>RustLsp hover actions<CR>', 'Hover actions')
+
+            -- Code actions (Rust-specific version)
+            map('<leader>ra', '<cmd>RustLsp codeAction<CR>', '[R]ust code [A]ction')
+
+            -- Navigation
+            map('<leader>rp', '<cmd>RustLsp parentModule<CR>', '[R]ust [P]arent module')
+
+            -- Advanced features
+            map('<leader>rg', '<cmd>RustLsp crateGraph<CR>', '[R]ust crate [G]raph')
+            map('<leader>rj', '<cmd>RustLsp joinLines<CR>', '[R]ust [J]oin lines')
           end
 
           -- The following two autocommands are used to highlight references of the
@@ -894,12 +935,18 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'tokyonight'
     end,
   },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^6', -- Recommended
+    lazy = false, -- This plugin is already lazy
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
